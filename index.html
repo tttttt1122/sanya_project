@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深蓝科技感大屏</title>
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        /* ========== 全局基础样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFangSC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: #0a1628;
+            color: #c8e0ff;
+            padding: 12px 16px;
+            background-image:
+                url('透明底科技感图形生成 (2).png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* 科技网格背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(0, 180, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 180, 255, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ========== 主容器 ========== */
+        .dashboard {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ========== 顶部标题栏 ========== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(0, 180, 255, 0.5) 50%, transparent 100%);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00d4ff 0%, #00ff88 50%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 4px;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .time-display {
+            font-size: 14px;
+            color: #7eb8d6;
+        }
+
+        .select-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-label {
+            font-size: 14px;
+            color: #7eb8d6;
+        }
+
+        .select-box {
+            background: rgba(0, 100, 180, 0.3);
+            border: 1px solid rgba(0, 180, 255, 0.4);
+            color: #c8e0ff;
+            padding: 6px 30px 6px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            cursor: pointer;
+        }
+
+        /* ========== 主体网格布局 ========== */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* ========== 卡片通用样式 ========== */
+        .card {
+            background: linear-gradient(135deg, rgba(0, 40, 80, 0.7) 0%, rgba(0, 25, 55, 0.9) 100%);
+            border: 1px solid rgba(0, 150, 255, 0.25);
+            border-radius: 4px;
+            padding: 12px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* 卡片四角装饰 */
+        .card::before,
+        .card::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: #00d4ff;
+        }
+
+        .card::before {
+            top: 0;
+            left: 0;
+            border-top: 2px solid;
+            border-left: 2px solid;
+        }
+
+        .card::after {
+            bottom: 0;
+            right: 0;
+            border-bottom: 2px solid;
+            border-right: 2px solid;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #00d4ff;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.2);
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: linear-gradient(180deg, #00d4ff, #0066cc);
+            border-radius: 2px;
+        }
+
+        /* ========== 左侧区域 ========== */
+        .col-left {
+            grid-column: 1;
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .list-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* 列表样式 */
+        .data-list {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            position: relative;
+        }
+
+        /* 滚动条样式 */
+        .data-list::-webkit-scrollbar,
+        .table-container::-webkit-scrollbar,
+        .wide-table-wrapper::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .data-list::-webkit-scrollbar-track,
+        .table-container::-webkit-scrollbar-track,
+        .wide-table-wrapper::-webkit-scrollbar-track {
+            background: rgba(0, 50, 100, 0.3);
+            border-radius: 2px;
+        }
+
+        .data-list::-webkit-scrollbar-thumb,
+        .table-container::-webkit-scrollbar-thumb,
+        .wide-table-wrapper::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00d4ff, #0066cc);
+            border-radius: 2px;
+        }
+
+        /* TOP10 列表 */
+        .top-list {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .top-list thead th {
+            background: rgba(0, 100, 180, 0.95);
+            color: #00d4ff;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 8px 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.4);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .top-list tbody td {
+            padding: 7px 10px;
+            font-size: 13px;
+            color: #c8e0ff;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 100, 180, 0.2);
+        }
+
+        .top-list tbody tr:hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        /* 排名样式 */
+        .rank-badge {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            text-align: center;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: #fff; }
+        .rank-2 { background: linear-gradient(135deg, #ffa94d, #ff922b); color: #fff; }
+        .rank-3 { background: linear-gradient(135deg, #ffd43b, #fab005); color: #fff; }
+        .rank-other { background: rgba(0, 150, 255, 0.3); color: #7eb8d6; }
+
+        /* ========== 中间区域 ========== */
+        .col-center {
+            grid-column: 2;
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* 指标卡片区域 */
+        .indicators-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .indicator-cards {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .indicator-card {
+            background: url('透明底科技感图形生成 (1).png') no-repeat center center;
+            background-size: 100% 100%;
+            border: none;
+            border-radius: 0;
+            padding: 30px 6px 12px;
+            text-align: center;
+            position: relative;
+            overflow: visible;
+            transition: all 0.3s ease;
+            min-height: 96px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .indicator-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .indicator-value {
+            font-size: 30px;
+            font-weight: bold;
+            color: #00ffcc;
+            text-shadow: 0 0 18px rgba(0, 255, 200, 0.65);
+            margin-bottom: 4px;
+            font-family: 'DIN', 'PingFangSC', sans-serif;
+            position: relative;
+            z-index: 2;
+        }
+
+        .indicator-label {
+            font-size: 13px;
+            color: #c8e0ff;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+            white-space: nowrap;
+        }
+
+        /* 关键指标排行 - Tab切换 */
+        .tab-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+            flex-shrink: 0;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .tab-bar::-webkit-scrollbar {
+            height: 2px;
+        }
+
+        .tab-bar::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.4);
+            border-radius: 1px;
+        }
+
+        .tab-item {
+            padding: 3px 8px;
+            font-size: 11px;
+            color: #7eb8d6;
+            background: rgba(0, 60, 120, 0.4);
+            border: 1px solid rgba(0, 150, 255, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tab-item:hover {
+            color: #c8e0ff;
+            border-color: rgba(0, 212, 255, 0.6);
+        }
+
+        .tab-item.active {
+            color: #0a1628;
+            background: linear-gradient(180deg, #00d4ff, #0099cc);
+            border-color: #00d4ff;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
+        }
+
+        /* 关键指标排行 */
+        .ranking-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* 柱状图卡片（保留以免样式报错） */
+        .bar-chart-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* 拒绝综合查一次列表卡片 */
+        .reject-list-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .ranking-table thead th {
+            background: rgba(0, 100, 180, 0.95);
+            color: #00d4ff;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 8px 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.4);
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .ranking-table tbody td {
+            padding: 8px 10px;
+            font-size: 13px;
+            color: #c8e0ff;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 100, 180, 0.15);
+        }
+
+        .ranking-table tbody tr:hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .rate-high { color: #00ff88; font-weight: bold; }
+        .rate-mid { color: #ffd43b; font-weight: bold; }
+        .rate-low { color: #ff6b6b; font-weight: bold; }
+
+        /* ========== 右侧区域 ========== */
+        .col-right {
+            grid-column: 3;
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* 未撮合对象列表 */
+        .matching-list-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* 检查频次过高预警列表 */
+        .warning-list-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        .matching-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .matching-table thead th {
+            background: rgba(0, 100, 180, 0.95);
+            color: #00d4ff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.4);
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .matching-table tbody td {
+            padding: 7px 6px;
+            font-size: 12px;
+            color: #c8e0ff;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 100, 180, 0.15);
+            white-space: nowrap;
+        }
+
+        .matching-table tbody tr:hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        /* 饼图卡片 */
+        .pie-chart-card {
+            flex: 1;
+            min-height: 0;
+        }
+
+        .pie-chart-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .pie-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+
+        .pie-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .pie-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .pie-legend-value {
+            color: #00ffcc;
+            font-weight: bold;
+            margin-left: 4px;
+        }
+
+        /* ========== 底部宽表 ========== */
+        .bottom-area {
+            grid-column: 1 / 4;
+            grid-row: 3;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .wide-table-wrapper {
+            flex: 1;
+            overflow: auto;
+            min-height: 0;
+            position: relative;
+        }
+
+        .wide-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+        }
+
+        .wide-table thead th {
+            background: rgba(0, 60, 120, 0.95);
+            color: #00d4ff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 4px;
+            text-align: center;
+            border: 1px solid rgba(0, 150, 255, 0.3);
+            white-space: normal;
+            word-break: break-all;
+            line-height: 1.4;
+            position: sticky;
+            z-index: 2;
+        }
+
+        /* 第一行表头（分组行）*/
+        .wide-table thead tr:first-child th {
+            top: 0;
+            z-index: 4;
+        }
+
+        /* 第二行表头（子列行）*/
+        .wide-table thead tr:nth-child(2) th {
+            top: 36px;
+            z-index: 3;
+        }
+
+        .wide-table thead th.group-header {
+            background: linear-gradient(180deg, rgba(0, 100, 180, 0.8), rgba(0, 60, 120, 0.9));
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .wide-table tbody td {
+            padding: 8px 4px;
+            font-size: 12px;
+            color: #c8e0ff;
+            text-align: center;
+            border: 1px solid rgba(0, 100, 180, 0.2);
+            white-space: normal;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .wide-table tbody tr:hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .wide-table tbody tr:nth-child(even) {
+            background: rgba(0, 40, 80, 0.4);
+        }
+
+        .wide-table tbody tr:nth-child(even):hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        /* ========== 动画效果 ========== */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .indicator-value {
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* ========== 树形行政区划选择器 ========== */
+        .tree-select-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tree-select-display {
+            background: rgba(0, 100, 180, 0.3);
+            border: 1px solid rgba(0, 180, 255, 0.4);
+            color: #c8e0ff;
+            padding: 6px 30px 6px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            min-width: 160px;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tree-select-display:hover {
+            border-color: #00d4ff;
+        }
+
+        .tree-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 220px;
+            max-height: 360px;
+            overflow-y: auto;
+            background: rgba(8, 22, 46, 0.98);
+            border: 1px solid rgba(0, 150, 255, 0.5);
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 150, 255, 0.3);
+            z-index: 1000;
+            display: none;
+            padding: 4px;
+        }
+
+        .tree-dropdown.show {
+            display: block;
+        }
+
+        .tree-dropdown::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .tree-dropdown::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.4);
+            border-radius: 2px;
+        }
+
+        .tree-node {
+            padding: 5px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            color: #c8e0ff;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.2s;
+        }
+
+        .tree-node:hover {
+            background: rgba(0, 150, 255, 0.2);
+        }
+
+        .tree-node.selected {
+            background: rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+        }
+
+        .tree-toggle {
+            width: 14px;
+            height: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #7eb8d6;
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .tree-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .tree-toggle.leaf {
+            visibility: hidden;
+        }
+
+        .tree-icon {
+            width: 14px;
+            height: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #00d4ff;
+            font-size: 11px;
+        }
+
+        .tree-children {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+
+        .tree-children.show {
+            max-height: 500px;
+        }
+
+        .tree-children .tree-node {
+            padding-left: 24px;
+        }
+
+        .tree-children .tree-children .tree-node {
+            padding-left: 42px;
+        }
+
+        /* ========== 响应式调整 ========== */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr 1.3fr 1fr;
+            }
+        }
+
+        /* ========== 底部卡片标题栏（带导出按钮） ========== */
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .card-header-row .card-title {
+            padding-bottom: 0;
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: linear-gradient(180deg, rgba(0, 150, 255, 0.3), rgba(0, 80, 160, 0.5));
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            border-radius: 4px;
+            color: #00d4ff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.4), rgba(0, 120, 200, 0.6));
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+            color: #fff;
+        }
+
+        .export-btn::before {
+            content: '⇩';
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- 顶部标题栏 -->
+        <div class="header">
+            <div class="header-title">数据监控大屏</div>
+            <div class="header-right">
+                <span class="time-display" id="currentTime"></span>
+                <div class="select-wrap">
+                    <span class="select-label">时间范围</span>
+                    <select id="timeRangeSelect" class="select-box" style="padding: 4px 8px; min-width: 90px;">
+                        <option value="month" >本月</option>
+                        <option value="quarter">本季度</option>
+                        <option value="year" selected>本年</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                    <input type="date" id="startDate" class="select-box" style="padding: 4px 6px; color: #c8e0ff; display: none;">
+                    <span id="dateSeparator" style="color: #7eb8d6; display: none;">~</span>
+                    <input type="date" id="endDate" class="select-box" style="padding: 4px 6px; color: #c8e0ff; display: none;">
+                </div>
+                
+                <div class="select-wrap">
+                    <span class="select-label">行政区划</span>
+                    <div class="tree-select-wrap" id="regionTreeSelect">
+                        <div class="tree-select-display" id="regionSelectDisplay">全部</div>
+                        <div class="tree-dropdown" id="regionTreeDropdown"></div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- 主体内容区 -->
+        <div class="main-content">
+            <!-- 左侧区域 -->
+            <div class="col-left">
+                <!-- TOP10 合并模块（选卡切换） -->
+                <div class="card list-card">
+                    <div class="tab-bar" style="margin-bottom: 8px;">
+                        <div class="tab-item active" data-toptab="0">高频检查事项 TOP10</div>
+                        <div class="tab-item" data-toptab="1">高频综合查一次场景 TOP10</div>
+                    </div>
+                    <div class="data-list">
+                        <table class="top-list">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">排名</th>
+                                    <th id="top10ColumnName">事项名称</th>
+                                    <th style="width: 70px;">检查次数</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top10Body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 饼图 + 右侧比例统计卡片 -->
+                <div class="card pie-chart-card">
+                    <div class="card-title">联合检查上门 VS 单部门检查上门</div>
+                    <div style="flex:1; display:flex; flex-direction:row; gap:12px; min-height:0;">
+                        <div id="pieChart" style="flex: 2.5; min-height: 0;"></div>
+                        <div style="flex: 0.8; display:flex; flex-direction:column; justify-content:center; gap:16px;">
+                            <!-- 联合检查比率 -->
+                            <div style="background: linear-gradient(135deg, rgba(0,100,180,0.4), rgba(0,50,100,0.5)); border: 1px solid rgba(0,150,255,0.3); border-radius: 6px; padding: 20px; text-align:center;">
+                                <div style="font-size:13px; color:#7eb8d6; margin-bottom:8px;">联合检查比率</div>
+                                <div style="font-size: 24px; font-weight:bold; color:#00d4ff; text-shadow:0 0 15px rgba(0,212,255,0.6); line-height:1;">39.4%</div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间区域 -->
+            <div class="col-center">
+                <div class="indicators-area">
+                    <!-- 关键指标排行 -->
+                    <div class="card ranking-card">
+                        <div class="card-title">关键指标排行</div>
+                        <!-- Tab切换 -->
+                        <div class="tab-bar">
+                            <div class="tab-item active" data-tab="0">综合查一次占比</div>
+                            <div class="tab-item" data-tab="1">场景使用率</div>
+                            
+                            <div class="tab-item" data-tab="3">管法衔接率</div>
+                        </div>
+                        <div style="flex:1; overflow-y: auto; min-height: 0; position: relative;">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">排名</th>
+                                        <th>区划部门</th>
+                                        <th id="rankingIndicator">综合查一次占比</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 最近拒绝综合查一次列表 -->
+                    <div class="card reject-list-card">
+                        <div class="card-title">拒绝综合查一次列表</div>
+                        <div style="flex:1; overflow-y: auto; overflow-x: hidden; min-height: 0; position: relative;">
+                            <table class="matching-table" style="table-layout: fixed; width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>综合查一次计划名称</th>
+                                        <th>拒绝部门</th>
+                                        <th>拒绝时间</th>
+                                        <th>拒绝理由</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rejectBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧区域 -->
+            <div class="col-right">
+                <!-- 未撮合对象列表 -->
+                <div class="card matching-list-card">
+                    <div class="card-title">30天内已提醒未撮合对象列表</div>
+                    <div style="flex:1; overflow-y: auto; min-height: 0; position: relative;">
+                        <table class="matching-table">
+                            <thead>
+                                <tr>
+                                    <th>对象名称</th>
+                                    <th>提醒撮合时间</th>
+                                    <th>被提醒撮合部门</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matchingBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 检查频次过高预警列表 -->
+                <div class="card warning-list-card">
+                    <div class="card-title">同一监管对象检查频次过高预警</div>
+                    <div style="flex:1; overflow-y: auto; min-height: 0; position: relative;">
+                        <table class="matching-table">
+                            <thead>
+                                <tr>
+                                    <th>对象名称</th>
+                                    <th>最近检查时间</th>
+                                    <th>监管部门</th>
+                                    <th>当年被检查次数</th>
+                                    <th>当月被检查次数</th>
+                                </tr>
+                            </thead>
+                            <tbody id="warningBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部宽表 -->
+            <div class="bottom-area">
+                <div class="card" style="padding: 10px;">
+                    <div class="card-header-row">
+                        <div class="card-title">综合数据统计表</div>
+                        
+                    </div>
+                    <div class="wide-table-wrapper">
+                        <table class="wide-table" id="wideTable">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="width:60px;">区划/部门</th>
+                                    <th colspan="9" class="group-header">综合查一次</th>
+                                    <th colspan="2" class="group-header">亮码检查</th>
+                                    <th colspan="3" class="group-header">管法衔接</th>
+                                    <th colspan="3" class="group-header">超期预警</th>
+                                </tr>
+                                <tr>
+                                    
+                                    <th>综合查一次子项数</th>
+                                    <th>行为子项数</th>
+                                    <th>综合查一次占比</th>
+                                    <th>综合查一次场景清单总数</th>
+                                    <th>被使用的综合查一次场景清单数</th>
+                                    <th>“综合查一次”场景使用率</th>
+                                    <th>牵头开展的“综合查一次”计划数</th>
+                                    <th>参与（响应）综合查一次”计划数</th>
+                                    <th>拒绝“综合查一次”次计划数</th>
+                                    <th>亮码任务数</th>
+                                    <th>未亮码任务数</th>
+                                    <th>线上移送线索数</th>
+                                    <th>线下移送线索数</th>
+                                    <th>管法衔接率</th>
+                                    <th>综合查一次超期未归档</th>
+                                    <th>检查方案超期未归档</th>
+                                    <th>检查数据超期未录入</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wideTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 实时时间 ==========
+        function updateTime() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const h = String(now.getHours()).padStart(2, '0');
+            const mi = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${y}-${m}-${d} ${h}:${mi}:${s}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // ========== 时间范围筛选 ==========
+        const timeRangeSelect = document.getElementById('timeRangeSelect');
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+        const dateSeparator = document.getElementById('dateSeparator');
+
+        timeRangeSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                startDate.style.display = '';
+                endDate.style.display = '';
+                dateSeparator.style.display = '';
+            } else {
+                startDate.style.display = 'none';
+                endDate.style.display = 'none';
+                dateSeparator.style.display = 'none';
+            }
+        });
+
+        // ========== TOP10 数据填充 ==========
+        // ========== TOP10 数据 ==========
+        const top10Data1 = [
+            { name: '对xxx的行政检查', count: 186 },
+            { name: '对xxx的行政检查', count: 152 },
+            { name: '对xxx的行政检查', count: 134 },
+            { name: '对xxx的行政检查', count: 128 },
+            { name: '对xxx的行政检查', count: 112 },
+            { name: '对xxx的行政检查', count: 98 },
+            { name: '对xxx的行政检查', count: 87 },
+            { name: '对xxx的行政检查', count: 76 },
+            { name: '对xxx的行政检查', count: 65 },
+            { name: '对xxx的行政检查', count: 54 }
+        ];
+
+        const top10Data2 = [
+            { name: '对xxx的行政检查', count: 145 },
+            { name: '对xxx的行政检查', count: 120 },
+            { name: '对xxx的行政检查', count: 108 },
+            { name: '对xxx的行政检查', count: 96 },
+            { name: '对xxx的行政检查', count: 84 },
+            { name: '对xxx的行政检查', count: 72 },
+            { name: '对xxx的行政检查', count: 63 },
+            { name: '对xxx的行政检查', count: 55 },
+            { name: '对xxx的行政检查', count: 48 },
+            { name: '对xxx的行政检查', count: 36 }
+        ];
+
+        let currentTopTab = 0;
+
+        function renderTop10(tabIndex) {
+            currentTopTab = tabIndex;
+            const data = tabIndex === 0 ? top10Data1 : top10Data2;
+            const columnName = tabIndex === 0 ? '事项名称' : '清单名称';
+            document.getElementById('top10ColumnName').textContent = columnName;
+            const tbody = document.getElementById('top10Body');
+            tbody.innerHTML = data.map((item, index) => {
+                let rankClass = 'rank-other';
+                if (index === 0) rankClass = 'rank-1';
+                else if (index === 1) rankClass = 'rank-2';
+                else if (index === 2) rankClass = 'rank-3';
+                return `
+                    <tr>
+                        <td><span class="rank-badge ${rankClass}">${index + 1}</span></td>
+                        <td>${item.name}</td>
+                        <td style="color: #00ffcc; font-weight: bold;">${item.count}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // TOP10 Tab切换事件
+        document.querySelectorAll('[data-toptab]').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('[data-toptab]').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                renderTop10(parseInt(this.dataset.toptab));
+            });
+        });
+
+        renderTop10(0);
+
+        // ========== 关键指标排行 ==========
+        // 只保留：综合查一次占比、场景使用率、亮码率、管法衔接率
+        const rankingLabels = [
+            '综合查一次占比',
+            '场景使用率',
+            '亮码率',
+            '管法衔接率'
+        ];
+        const rankingData = [
+            [
+                { dept: '海口市', values: ['86.20%', '93.10%', '98.60%', '91.80%'] },
+                { dept: '三亚市', values: ['88.50%', '95.30%', '99.20%', '92.60%'] },
+                { dept: '儋州市', values: ['82.10%', '90.50%', '97.80%', '89.30%'] }
+            ]
+        ];
+
+        let currentTab = 0;
+
+        function renderRanking(tabIndex) {
+            currentTab = tabIndex;
+            document.getElementById('rankingIndicator').textContent = rankingLabels[tabIndex];
+            const tbody = document.getElementById('rankingBody');
+            const data = rankingData[0];
+            // 按选中指标排序
+            const sorted = [...data].sort((a, b) => {
+                const va = parseFloat(a.values[tabIndex]);
+                const vb = parseFloat(b.values[tabIndex]);
+                return vb - va;
+            });
+            tbody.innerHTML = sorted.map((item, index) => {
+                let rankClass = 'rank-other';
+                if (index === 0) rankClass = 'rank-1';
+                else if (index === 1) rankClass = 'rank-2';
+                else if (index === 2) rankClass = 'rank-3';
+                const val = item.values[tabIndex];
+                const valNum = parseFloat(val);
+                let rateClass = 'rate-high';
+                if (valNum < 80) rateClass = 'rate-low';
+                else if (valNum < 90) rateClass = 'rate-mid';
+                return `
+                    <tr>
+                        <td><span class="rank-badge ${rankClass}">${index + 1}</span></td>
+                        <td>${item.dept}</td>
+                        <td class="${rateClass}">${val}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 排行 Tab切换事件绑定
+        document.querySelectorAll('[data-tab]').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('[data-tab]').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                renderRanking(parseInt(this.dataset.tab));
+            });
+        });
+
+        renderRanking(0);
+
+        // ========== 未撮合对象列表 ==========
+        const matchingData = [
+            { name: '三亚某某海鲜店', time: '2024-01-15', dept: '市场监管局' },
+            { name: '三亚某某餐饮店', time: '2024-01-15', dept: '卫健委' },
+            { name: '三亚某某超市', time: '2024-01-14', dept: '商务局' },
+            { name: '三亚某某药店', time: '2024-01-14', dept: '市场监管局' },
+            { name: '三亚某某加工厂', time: '2024-01-13', dept: '农业农村局' },
+            { name: '三亚某某旅馆', time: '2024-01-13', dept: '文旅局' },
+            { name: '三亚某某建材店', time: '2024-01-12', dept: '住建局' },
+            { name: '三亚某某食品厂', time: '2024-01-12', dept: '市场监管局' },
+            { name: '三亚某某诊所', time: '2024-01-11', dept: '卫健委' },
+            { name: '三亚某某加油站', time: '2024-01-11', dept: '应急管理局' }
+        ];
+
+        function renderMatching() {
+            const tbody = document.getElementById('matchingBody');
+            tbody.innerHTML = matchingData.map(item => `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.time}</td>
+                    <td>${item.dept}</td>
+                </tr>
+            `).join('');
+        }
+        renderMatching();
+
+        // ========== 检查频次过高预警列表 ==========
+        const warningData = [
+            { name: '三亚某某海鲜餐饮店', time: '2026-08-12', dept: '市场监管局', yearCount: 28, monthCount: 5 },
+            { name: '三亚某某连锁超市', time: '2026-08-11', dept: '商务局', yearCount: 25, monthCount: 4 },
+            { name: '三亚某某食品加工厂', time: '2026-08-11', dept: '市场监管局', yearCount: 23, monthCount: 6 },
+            { name: '三亚某某药店', time: '2026-08-10', dept: '药监局', yearCount: 22, monthCount: 3 },
+            { name: '三亚某某燃气公司', time: '2026-08-10', dept: '应急管理局', yearCount: 20, monthCount: 4 },
+            { name: '三亚某某建材市场', time: '2026-08-09', dept: '住建局', yearCount: 19, monthCount: 3 },
+            { name: '三亚某某水产养殖场', time: '2026-08-09', dept: '农业农村局', yearCount: 18, monthCount: 5 },
+            { name: '三亚某某化工企业', time: '2026-08-08', dept: '生态环境局', yearCount: 17, monthCount: 4 },
+            { name: '三亚某某物流公司', time: '2026-08-08', dept: '交通局', yearCount: 16, monthCount: 3 },
+            { name: '三亚某某医疗机构', time: '2026-08-07', dept: '卫健委', yearCount: 15, monthCount: 4 }
+        ];
+
+        function renderWarning() {
+            const tbody = document.getElementById('warningBody');
+            tbody.innerHTML = warningData.map(item => `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.time}</td>
+                    <td>${item.dept}</td>
+                    <td style="color: #ff6b6b; font-weight: bold;">${item.yearCount}</td>
+                    <td style="color: #ffa500; font-weight: bold;">${item.monthCount}</td>
+                </tr>
+            `).join('');
+        }
+        renderWarning();
+
+        // ========== 区划数据：省级/地级/区级/部门 ==========
+        const regionTreeData = [
+            {
+                id: 'default', name: '全部', leaf: true
+            },
+            {
+                id: 'sanya', name: '三亚市', children: [
+                    { id: 'sanyashi', name: '市直部门', leaf: true },
+                    {
+                        id: 'jiyang', name: '吉阳区', children: [
+                            { id: 'jiyang-dep', name: '区直部门', leaf: true }
+                        ]
+                    },
+                    {
+                        id: 'tianya', name: '天涯区', children: [
+                            { id: 'tianya-dep', name: '区直部门', leaf: true }
+                        ]
+                    },
+                    {
+                        id: 'yazhou', name: '崖州区', children: [
+                            { id: 'yazhou-dep', name: '区直部门', leaf: true }
+                        ]
+                    },
+                    {
+                        id: 'haitang', name: '海棠区', children: [
+                            { id: 'haitang-dep', name: '区直部门', leaf: true }
+                        ]
+                    },
+                    {
+                        id: 'yucai', name: '育才生态区', children: [
+                            { id: 'yucai-dep', name: '区直部门', leaf: true }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // 当前选中区划
+        let currentRegion = 'default';
+
+        // ========== 树形选择器渲染 ==========
+        function renderTree() {
+            const dropdown = document.getElementById('regionTreeDropdown');
+            function buildNodes(nodes) {
+                return nodes.map(node => {
+                    const hasChildren = node.children && node.children.length > 0;
+                    const toggleClass = hasChildren ? 'tree-toggle' : 'tree-toggle leaf';
+                    const selectedClass = currentRegion === node.id ? 'selected' : '';
+                    return `
+                        <div class="tree-node-wrap" data-id="${node.id}">
+                            <div class="tree-node ${selectedClass}" data-id="${node.id}" data-has-children="${hasChildren}">
+                                <span class="${toggleClass}">${hasChildren ? '▶' : '·'}</span>
+                                <span class="tree-icon">${hasChildren ? '📁' : '📄'}</span>
+                                <span class="tree-name">${node.name}</span>
+                            </div>
+                            ${hasChildren ? `<div class="tree-children">${buildNodes(node.children)}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+            dropdown.innerHTML = buildNodes(regionTreeData);
+
+            // 绑定点击事件
+            dropdown.querySelectorAll('.tree-node').forEach(nodeEl => {
+                nodeEl.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    const hasChildren = this.dataset.hasChildren === 'true';
+                    // 选中
+                    currentRegion = id;
+                    document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('selected'));
+                    this.classList.add('selected');
+                    // 更新显示文字：从树根找到该节点的路径
+                    document.getElementById('regionSelectDisplay').textContent = this.querySelector('.tree-name').textContent;
+                    // 如果有子节点则展开/收起
+                    if (hasChildren) {
+                        const toggle = this.querySelector('.tree-toggle');
+                        const children = this.parentElement.querySelector('.tree-children');
+                        if (children) {
+                            children.classList.toggle('show');
+                            toggle.classList.toggle('expanded');
+                        }
+                    }
+                    // 关闭下拉
+                    setTimeout(() => {
+                        document.getElementById('regionTreeDropdown').classList.remove('show');
+                    }, 150);
+                    // 触发数据切换
+                    switchRegionData(id);
+                });
+            });
+        }
+
+        // 显示/隐藏下拉
+        document.getElementById('regionSelectDisplay').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('regionTreeDropdown').classList.toggle('show');
+        });
+
+        // 点击其他位置关闭下拉
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.tree-select-wrap')) {
+                document.getElementById('regionTreeDropdown').classList.remove('show');
+            }
+        });
+
+        renderTree();
+
+        // ========== 全部数据 ==========
+        // 默认数据：全省/全部门数据（地级市级别），4个指标：综合查一次占比、场景使用率、亮码率、管法衔接率
+        const allDefaultRanking = [
+            { dept: '海口市', values: ['86.20%', '93.10%', '98.60%', '91.80%'] },
+            { dept: '三亚市', values: ['88.50%', '95.30%', '99.20%', '92.60%'] },
+            { dept: '儋州市', values: ['82.10%', '90.50%', '97.80%', '89.30%'] }
+        ];
+
+        // 三亚市区县级数据
+        const sanyaDistrictRanking = [
+            { dept: '市直部门', values: ['91.20%', '96.50%', '99.80%', '94.60%'] },
+            { dept: '吉阳区', values: ['89.30%', '94.80%', '99.10%', '93.20%'] },
+            { dept: '天涯区', values: ['88.60%', '94.20%', '98.80%', '92.50%'] },
+            { dept: '崖州区', values: ['87.80%', '93.60%', '98.50%', '91.80%'] },
+            { dept: '海棠区', values: ['87.20%', '93.10%', '98.20%', '91.20%'] },
+            { dept: '育才生态区', values: ['86.50%', '92.50%', '97.80%', '90.50%'] }
+        ];
+
+        // 默认宽表：全部时只显示三亚市一行（18列：1区划+9综合查一次+2亮码检查+3管法衔接+3超期预警）
+        const allDefaultWide = [
+            ['三亚市', '86', '12', '88.50%', '156', '98', '62.80%', '45', '38', '2', '312', '22', '18', '15', '92.60%', '5', '3', '8']
+        ];
+
+        // 三亚各区县宽表
+        const sanyaDistrictWide = [
+            ['市直部门', '36', '5', '91.20%', '86', '58', '67.44%', '22', '18', '1', '178', '12', '6', '8', '94.60%', '3', '1', '4'],
+            ['吉阳区', '26', '3', '89.30%', '38', '24', '63.16%', '12', '10', '1', '72', '5', '5', '4', '93.20%', '1', '1', '2'],
+            ['天涯区', '24', '2', '88.60%', '34', '21', '61.76%', '10', '8', '0', '66', '6', '4', '3', '92.50%', '2', '1', '2'],
+            ['崖州区', '20', '2', '87.80%', '30', '18', '60.00%', '8', '7', '1', '58', '4', '4', '2', '91.80%', '0', '1', '1'],
+            ['海棠区', '18', '2', '87.20%', '26', '15', '57.69%', '7', '6', '1', '50', '3', '5', '2', '91.20%', '0', '0', '1'],
+            ['育才生态区', '15', '1', '86.50%', '22', '12', '54.55%', '5', '4', '1', '41', '4', '3', '1', '90.50%', '0', '0', '1']
+        ];
+
+        // ========== 切换区划数据 ==========
+        function switchRegionData(regionId) {
+            // 判断是否三亚市或其下级
+            const isSanya = regionId === 'sanya' ||
+                ['sanyashi', 'jiyang', 'tianya', 'yazhou', 'haitang', 'yucai',
+                 'jiyang-dep', 'tianya-dep', 'yazhou-dep', 'haitang-dep', 'yucai-dep'].includes(regionId);
+
+            const rankData = isSanya ? sanyaDistrictRanking : allDefaultRanking;
+            const wideData = isSanya ? sanyaDistrictWide : allDefaultWide;
+
+            // 替换全局数据引用
+            rankingData[0] = rankData;
+            wideTableData.length = 0;
+            wideData.forEach(row => wideTableData.push(row));
+
+            // 重新渲染
+            renderRanking(currentTab);
+            renderWideTable();
+        }
+
+        // ========== 宽表数据 ==========
+        const wideTableData = [
+            ['三亚市', '86', '12', '88.50%', '156', '98', '62.80%', '45', '38', '2', '312', '22', '18', '15', '92.60%', '5', '3', '8']
+        ];
+
+        function renderWideTable() {
+            const tbody = document.getElementById('wideTableBody');
+            tbody.innerHTML = wideTableData.map(row => `
+                <tr>
+                    ${row.map(cell => `<td>${cell}</td>`).join('')}
+                </tr>
+            `).join('');
+        }
+        renderWideTable();
+
+        // ========== ECharts 饼图 ==========
+        const pieChart = echarts.init(document.getElementById('pieChart'));
+        // 计算数据：综合查一次 268次，单部门检查 412次
+        const totalComprehensive = 268;
+        const totalSingle = 412;
+        const totalAll = totalComprehensive + totalSingle;
+
+        const pieOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c}次 ({d}%)',
+                backgroundColor: 'rgba(0, 40, 80, 0.9)',
+                borderColor: '#00d4ff',
+                textStyle: { color: '#c8e0ff', fontSize: 12 }
+            },
+            legend: {
+                orient: 'horizontal',
+                bottom: 0,
+                textStyle: { color: '#7eb8d6', fontSize: 12 },
+                itemWidth: 12,
+                itemHeight: 12,
+                itemGap: 25
+            },
+            title: {
+                text: totalAll.toString(),
+                subtext: '总检查次数',
+                left: 'center',
+                top: '38%',
+                textStyle: {
+                    color: '#00ffcc',
+                    fontSize: 24,
+                    fontWeight: 'bold'
+                },
+                subtextStyle: {
+                    color: '#7eb8d6',
+                    fontSize: 12
+                }
+            },
+            series: [{
+                name: '检查类型',
+                type: 'pie',
+                radius: ['45%', '68%'],
+                center: ['50%', '50%'],
+                avoidLabelOverlap: true,
+                itemStyle: {
+                    borderRadius: 4,
+                    borderColor: '#0a1628',
+                    borderWidth: 3
+                },
+                label: {
+                    show: true,
+                    position: 'outside',
+                    formatter: '{b}\n{c}次',
+                    color: '#c8e0ff',
+                    fontSize: 12,
+                    lineHeight: 16
+                },
+                labelLine: {
+                    show: true,
+                    lineStyle: { color: 'rgba(0, 150, 255, 0.5)' }
+                },
+                data: [
+                    {
+                        value: totalComprehensive,
+                        name: '综合查一次',
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+                                { offset: 0, color: '#00d4ff' },
+                                { offset: 1, color: '#0066cc' }
+                            ])
+                        }
+                    },
+                    {
+                        value: totalSingle,
+                        name: '单部门检查',
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+                                { offset: 0, color: '#ff9f43' },
+                                { offset: 1, color: '#ee5a24' }
+                            ])
+                        }
+                    }
+                ]
+            }]
+        };
+        pieChart.setOption(pieOption);
+
+        // ========== ECharts 柱状图：已删除 ==========
+
+        // ========== 最近拒绝综合查一次列表数据 ==========
+        const rejectData = [
+            { plan: '餐饮店卫生安全综合检查', dept: '生态环境局吉阳分局', time: '2026-08-12 09:30', reason: '当天执法人员全员外出专项检查，无法抽调人员参与' },
+            { plan: '旅游景区特种设备联合检查', dept: '市场监管局天涯分局', time: '2026-08-11 14:20', reason: '已有本部门单独检查计划安排，时间冲突' },
+            { plan: '建筑工地安全综合查一次', dept: '消防救援支队崖州大队', time: '2026-08-11 10:15', reason: '车辆检修期间无法出动，建议改期再行联合检查' },
+            { plan: '药店药品流通联合检查', dept: '公安局海棠分局', time: '2026-08-10 16:00', reason: '近期重大安保任务，警力不足' },
+            { plan: '水产养殖场环保综合检查', dept: '交通运输局育才分局', time: '2026-08-10 11:40', reason: '本次检查事项不涉及交通运输职能，无需参与' },
+            { plan: '住宿行业消防联合检查', dept: '卫健委吉阳分局', time: '2026-08-09 15:25', reason: '检查当日有疫情防控值守任务，人员不可离岗' },
+            { plan: '化工企业安全生产综合检查', dept: '商务局天涯分局', time: '2026-08-09 09:50', reason: '无相关监管职责，建议调整牵头部门另行组织' },
+            { plan: '冷链食品疫情防控联合检查', dept: '林业局崖州分局', time: '2026-08-08 14:10', reason: '职能边界不属于林业部门管辖范围' },
+            { plan: '物流仓储消防安全综合检查', dept: '人社局海棠分局', time: '2026-08-08 10:05', reason: '计划当日另有劳动监察专项检查行动' },
+            { plan: '医疗机构执业联合检查', dept: '综合行政执法局育才支队', time: '2026-08-07 16:30', reason: '执法队伍培训期间，无法派员参加' }
+        ];
+
+        function renderRejectList() {
+            const tbody = document.getElementById('rejectBody');
+            tbody.innerHTML = rejectData.map(item => `
+                <tr>
+                    <td style="text-align:left; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.plan}">${item.plan}</td>
+                    <td style="max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.dept}">${item.dept}</td>
+                    <td style="white-space:nowrap;">${item.time}</td>
+                    <td style="text-align:left; color:#ff9f8c; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.reason}">${item.reason}</td>
+                </tr>
+            `).join('');
+        }
+        renderRejectList();
+
+        // ========== 窗口自适应 ==========
+        window.addEventListener('resize', () => {
+            pieChart.resize();
+        });
+
+        // ========== 数字滚动动画 ==========
+        function animateNumber(el, target, duration) {
+            const start = 0;
+            const startTime = performance.now();
+            function currentTime(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = Math.floor(start + (target - start) * eased);
+                el.textContent = value;
+                if (progress < 1) requestAnimationFrame(currentTime);
+            }
+            requestAnimationFrame(currentTime);
+        }
+
+        // ========== 导出宽表数据为CSV ==========
+        function exportWideTable() {
+            const table = document.getElementById('wideTable');
+            const headers = [];
+            const rows = [];
+            // 读取合并后的表头（两层）
+            const headerRows = table.querySelectorAll('thead tr');
+            // 先处理第一行表头（分组）
+            const groupHeaders = [];
+            headerRows[0].querySelectorAll('th').forEach(th => {
+                const colspan = parseInt(th.getAttribute('colspan') || 1);
+                const rowspan = parseInt(th.getAttribute('rowspan') || 1);
+                const text = th.innerText.trim();
+                for (let i = 0; i < colspan; i++) {
+                    groupHeaders.push({ text, merged: colspan > 1, rowspan });
+                }
+            });
+            // 处理第二行子表头
+            const subHeaders = [];
+            headerRows[1].querySelectorAll('th').forEach(th => {
+                subHeaders.push(th.innerText.trim());
+            });
+            // 生成完整表头（分组_子列）
+            const fullHeaders = groupHeaders.map((g, i) => {
+                const sub = subHeaders[i] || '';
+                if (g.rowspan === 2 && !g.merged) return g.text;
+                return g.merged ? `${g.text}_${sub}` : sub;
+            });
+            headers.push(...fullHeaders);
+
+            // 读取数据行
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    row.push(`"${td.innerText.trim().replace(/"/g, '""')}"`);
+                });
+                rows.push(row.join(','));
+            });
+
+            const csvContent = '\uFEFF' + headers.join(',') + '\r\n' + rows.join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date();
+            const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+            a.href = url;
+            a.download = `综合数据统计表_${ts}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('exportBtn').addEventListener('click', exportWideTable);
+    </script>
+</body>
+</html>
