@@ -950,6 +950,7 @@
                         <table class="matching-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 40px;">预警灯</th>
                                     <th>对象名称</th>
                                     <th>最近检查时间</th>
                                     <th>监管部门</th>
@@ -1266,30 +1267,39 @@
         renderMatching();
 
         // ========== 检查频次过高预警列表 ==========
+        // 预警灯 level：red 表示红色（当年检查次数 ≥ 20，高频红色预警）；yellow 表示黄色（10-19，黄色预警）
         const warningData = [
-            { name: '三亚某某海鲜餐饮店', time: '2026-08-12', dept: '市场监管局', yearCount: 28, monthCount: 5 },
-            { name: '三亚某某连锁超市', time: '2026-08-11', dept: '商务局', yearCount: 25, monthCount: 4 },
-            { name: '三亚某某食品加工厂', time: '2026-08-11', dept: '市场监管局', yearCount: 23, monthCount: 6 },
-            { name: '三亚某某药店', time: '2026-08-10', dept: '药监局', yearCount: 22, monthCount: 3 },
-            { name: '三亚某某燃气公司', time: '2026-08-10', dept: '应急管理局', yearCount: 20, monthCount: 4 },
-            { name: '三亚某某建材市场', time: '2026-08-09', dept: '住建局', yearCount: 19, monthCount: 3 },
-            { name: '三亚某某水产养殖场', time: '2026-08-09', dept: '农业农村局', yearCount: 18, monthCount: 5 },
-            { name: '三亚某某化工企业', time: '2026-08-08', dept: '生态环境局', yearCount: 17, monthCount: 4 },
-            { name: '三亚某某物流公司', time: '2026-08-08', dept: '交通局', yearCount: 16, monthCount: 3 },
-            { name: '三亚某某医疗机构', time: '2026-08-07', dept: '卫健委', yearCount: 15, monthCount: 4 }
+            { level: 'red',    name: '三亚某某海鲜餐饮店', time: '2026-08-12', dept: '市场监管局', yearCount: 28, monthCount: 5 },
+            { level: 'red',    name: '三亚某某连锁超市', time: '2026-08-11', dept: '商务局', yearCount: 25, monthCount: 4 },
+            { level: 'red',    name: '三亚某某食品加工厂', time: '2026-08-11', dept: '市场监管局', yearCount: 23, monthCount: 6 },
+            { level: 'red',    name: '三亚某某药店', time: '2026-08-10', dept: '药监局', yearCount: 22, monthCount: 3 },
+            { level: 'red',    name: '三亚某某燃气公司', time: '2026-08-10', dept: '应急管理局', yearCount: 20, monthCount: 4 },
+            { level: 'yellow', name: '三亚某某建材市场', time: '2026-08-09', dept: '住建局', yearCount: 19, monthCount: 3 },
+            { level: 'yellow', name: '三亚某某水产养殖场', time: '2026-08-09', dept: '农业农村局', yearCount: 18, monthCount: 5 },
+            { level: 'yellow', name: '三亚某某化工企业', time: '2026-08-08', dept: '生态环境局', yearCount: 17, monthCount: 4 },
+            { level: 'yellow', name: '三亚某某物流公司', time: '2026-08-08', dept: '交通局', yearCount: 16, monthCount: 3 },
+            { level: 'yellow', name: '三亚某某医疗机构', time: '2026-08-07', dept: '卫健委', yearCount: 15, monthCount: 4 }
         ];
 
         function renderWarning() {
             const tbody = document.getElementById('warningBody');
-            tbody.innerHTML = warningData.map(item => `
+            tbody.innerHTML = warningData.map(item => {
+                // 预警灯颜色与文字描述
+                const lampColor = item.level === 'red' ? '#ff4d4f' : '#ffd700';
+                const lampText = item.level === 'red' ? '红色' : '黄色';
+                return `
                 <tr>
+                    <td style="text-align: center;">
+                        <span title="${lampText}预警" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: ${lampColor}; box-shadow: 0 0 6px ${lampColor};"></span>
+                    </td>
                     <td>${item.name}</td>
                     <td>${item.time}</td>
                     <td>${item.dept}</td>
                     <td style="color: #ff6b6b; font-weight: bold;">${item.yearCount}</td>
                     <td style="color: #ffa500; font-weight: bold;">${item.monthCount}</td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
         renderWarning();
 
@@ -1584,7 +1594,7 @@
 
         // ========== ECharts 饼图 ==========
         const pieChart = echarts.init(document.getElementById('pieChart'));
-        // 计算数据：综合查一次 268次，单部门检查 412次
+        // 计算数据：联合检查 268次，单部门检查 412次
         const totalComprehensive = 268;
         const totalSingle = 412;
         const totalAll = totalComprehensive + totalSingle;
@@ -1646,7 +1656,7 @@
                 data: [
                     {
                         value: totalComprehensive,
-                        name: '综合查一次',
+                        name: '联合检查',
                         itemStyle: {
                             color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
                                 { offset: 0, color: '#00d4ff' },
@@ -1819,8 +1829,8 @@
                 const rows = matchingData.map((item, i) => [i + 1, item.name, item.time, item.dept]);
                 exportCSV('30天内未撮合对象', ['排名', '对象名称', '提醒撮合时间', '被提醒撮合部门'], rows);
             } else {
-                const rows = warningData.map((item, i) => [i + 1, item.name, item.time, item.dept, item.yearCount, item.monthCount]);
-                exportCSV('检查频次过高预警', ['排名', '对象名称', '最近检查时间', '监管部门', '当年被检查次数', '当月被检查次数'], rows);
+                const rows = warningData.map((item, i) => [i + 1, item.level === 'red' ? '红色' : '黄色', item.name, item.time, item.dept, item.yearCount, item.monthCount]);
+                exportCSV('检查频次过高预警', ['排名', '预警灯', '对象名称', '最近检查时间', '监管部门', '当年被检查次数', '当月被检查次数'], rows);
             }
         }
 
