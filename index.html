@@ -397,6 +397,59 @@
             box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
         }
 
+        /* 模块内时间选卡（本年/本月/本季度） - 紧凑型小选卡 */
+        .time-tabs {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .time-tabs .tab-item {
+            padding: 2px 8px;
+            font-size: 10px;
+        }
+
+        /* 综合数据统计表自定义日期范围筛选条 */
+        .wide-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            flex-shrink: 0;
+        }
+        .wide-filter-bar .filter-label {
+            font-size: 12px;
+            color: #7eb8d6;
+            white-space: nowrap;
+        }
+        .wide-filter-bar input[type="date"] {
+            padding: 3px 6px;
+            font-size: 11px;
+            color: #c8e0ff;
+            background: rgba(0, 60, 120, 0.4);
+            border: 1px solid rgba(0, 150, 255, 0.3);
+            border-radius: 4px;
+            outline: none;
+        }
+        .wide-filter-bar .filter-sep {
+            color: #7eb8d6;
+            font-size: 12px;
+        }
+        .wide-filter-bar .filter-btn {
+            padding: 3px 10px;
+            font-size: 11px;
+            color: #0a1628;
+            background: linear-gradient(180deg, #00d4ff, #0099cc);
+            border: 1px solid #00d4ff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .wide-filter-bar .filter-btn:hover {
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+        }
+
         /* 关键指标排行 */
         .ranking-card {
             flex: 1;
@@ -823,19 +876,7 @@
             <div class="header-title">数据监控大屏</div>
             <div class="header-right">
                 <span class="time-display" id="currentTime"></span>
-                <div class="select-wrap">
-                    <span class="select-label">时间范围</span>
-                    <select id="timeRangeSelect" class="select-box" style="padding: 4px 8px; min-width: 90px;">
-                        <option value="month" >本月</option>
-                        <option value="quarter">本季度</option>
-                        <option value="year" selected>本年</option>
-                        <option value="custom">自定义</option>
-                    </select>
-                    <input type="date" id="startDate" class="select-box" style="padding: 4px 6px; color: #c8e0ff; display: none;">
-                    <span id="dateSeparator" style="color: #7eb8d6; display: none;">~</span>
-                    <input type="date" id="endDate" class="select-box" style="padding: 4px 6px; color: #c8e0ff; display: none;">
-                </div>
-                
+
                 <div class="select-wrap">
                     <span class="select-label">行政区划</span>
                     <div class="tree-select-wrap" id="regionTreeSelect">
@@ -843,7 +884,7 @@
                         <div class="tree-dropdown" id="regionTreeDropdown"></div>
                     </div>
                 </div>
-                
+
             </div>
         </div>
 
@@ -861,6 +902,11 @@
                         </div>
                         <button class="export-btn" onclick="exportTop10()">导出</button>
                     </div>
+                    <div class="time-tabs" style="margin-bottom: 4px;">
+                        <div class="tab-item active" data-range="year">本年</div>
+                        <div class="tab-item" data-range="quarter">本季度</div>
+                        <div class="tab-item" data-range="month">本月</div>
+                    </div>
                     <div class="data-list">
                         <table class="top-list">
                             <thead>
@@ -877,7 +923,14 @@
 
                 <!-- 饼图 + 右侧比例统计卡片 -->
                 <div class="card pie-chart-card">
-                    <div class="card-title">联合检查上门 VS 单部门检查上门</div>
+                    <div class="card-header-row">
+                        <div class="card-title" style="padding-bottom:0; margin-bottom:0; border-bottom:none;">联合检查上门 VS 单部门检查上门</div>
+                        <div class="time-tabs">
+                            <div class="tab-item active" data-range="year">本年</div>
+                            <div class="tab-item" data-range="quarter">本季度</div>
+                            <div class="tab-item" data-range="month">本月</div>
+                        </div>
+                    </div>
                     <div style="flex:1; display:flex; flex-direction:row; gap:12px; min-height:0;">
                         <div id="pieChart" style="flex: 2.5; min-height: 0;"></div>
                         <div style="flex: 0.8; display:flex; flex-direction:column; justify-content:center; gap:16px;">
@@ -898,6 +951,11 @@
                 <div class="card ranking-card">
                     <div class="card-header-row">
                         <div class="card-title" style="padding-bottom:0; margin-bottom:0; border-bottom:none;">关键指标排行</div>
+                        <div class="time-tabs">
+                            <div class="tab-item active" data-range="year">本年</div>
+                            <div class="tab-item" data-range="quarter">本季度</div>
+                            <div class="tab-item" data-range="month">本月</div>
+                        </div>
                         <button class="export-btn" onclick="exportRanking()">导出</button>
                     </div>
                     <!-- Tab切换 -->
@@ -931,6 +989,11 @@
                             <div class="tab-item" data-rttab="1">检查频次过高预警</div>
                         </div>
                         <button class="export-btn" onclick="exportRightTop()">导出</button>
+                    </div>
+                    <div class="time-tabs" style="margin-bottom: 4px;">
+                        <div class="tab-item active" data-range="year">本年</div>
+                        <div class="tab-item" data-range="quarter">本季度</div>
+                        <div class="tab-item" data-range="month">本月</div>
                     </div>
                     <!-- 未撮合对象列表 -->
                     <div id="rtPanel0" style="flex:1; overflow-y: auto; min-height: 0; position: relative;">
@@ -968,6 +1031,11 @@
                 <div class="card reject-list-card">
                     <div class="card-header-row">
                         <div class="card-title" style="padding-bottom:0; margin-bottom:0; border-bottom:none;">拒绝综合查一次列表</div>
+                        <div class="time-tabs">
+                            <div class="tab-item active" data-range="year">本年</div>
+                            <div class="tab-item" data-range="quarter">本季度</div>
+                            <div class="tab-item" data-range="month">本月</div>
+                        </div>
                         <button class="export-btn" onclick="exportReject()">导出</button>
                     </div>
                     <div style="flex:1; overflow-y: auto; overflow-x: hidden; min-height: 0; position: relative;">
@@ -992,6 +1060,12 @@
                 <div class="card" style="padding: 10px;">
                     <div class="card-header-row">
                         <div class="card-title">综合数据统计表</div>
+                        <div class="wide-filter-bar" style="padding: 0; margin-left: auto; margin-right: 12px;">
+                            <span class="filter-label">自定义时间范围：</span>
+                            <input type="date" id="wideStartDate">
+                            <span class="filter-sep">~</span>
+                            <input type="date" id="wideEndDate">
+                        </div>
                         <button class="export-btn" id="exportBtn">导出</button>
                     </div>
                     <div class="wide-table-wrapper">
@@ -1049,23 +1123,34 @@
         setInterval(updateTime, 1000);
         updateTime();
 
-        // ========== 时间范围筛选 ==========
-        const timeRangeSelect = document.getElementById('timeRangeSelect');
-        const startDate = document.getElementById('startDate');
-        const endDate = document.getElementById('endDate');
-        const dateSeparator = document.getElementById('dateSeparator');
-
-        timeRangeSelect.addEventListener('change', function() {
-            if (this.value === 'custom') {
-                startDate.style.display = '';
-                endDate.style.display = '';
-                dateSeparator.style.display = '';
-            } else {
-                startDate.style.display = 'none';
-                endDate.style.display = 'none';
-                dateSeparator.style.display = 'none';
-            }
+        // ========== 模块内时间选卡筛选（本年/本月/本季度） ==========
+        // 所有 .time-tabs 中的 .tab-item 点击切换 active，并触发对应模块数据重渲染（这里仅切换样式，数据为占位，保持不动）
+        document.querySelectorAll('.time-tabs').forEach(tabBar => {
+            const items = tabBar.querySelectorAll('.tab-item');
+            items.forEach(item => {
+                item.addEventListener('click', function() {
+                    items.forEach(x => x.classList.remove('active'));
+                    this.classList.add('active');
+                    // 占位：实际项目可在此根据 data-range 调用对应模块的数据刷新
+                });
+            });
         });
+
+        // ========== 综合数据统计表自定义日期筛选 ==========
+        // 不再使用筛选按钮：日期变更即时校验
+        const wideStartDate = document.getElementById('wideStartDate');
+        const wideEndDate = document.getElementById('wideEndDate');
+        function applyWideDateFilter() {
+            const s = wideStartDate.value;
+            const e = wideEndDate.value;
+            if (s && e && s > e) {
+                alert('开始日期不能晚于结束日期');
+                return;
+            }
+            // 占位：实际项目可在此根据日期范围重新拉取综合数据统计表数据
+        }
+        if (wideStartDate) wideStartDate.addEventListener('change', applyWideDateFilter);
+        if (wideEndDate) wideEndDate.addEventListener('change', applyWideDateFilter);
 
         // ========== TOP10 数据填充 ==========
         // ========== TOP10 数据 ==========
